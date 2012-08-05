@@ -24,7 +24,7 @@ namespace EasyNetQ
         // setting to zero makes this infinite, but risks an out-of-memory exception.
         // set to 50 based on this blog post:
         // http://www.rabbitmq.com/blog/2012/04/25/rabbitmq-performance-measurements-part-2/
-        private const int prefetchCount = 50; 
+        private ushort prefetchCount = 50; 
 
         public RabbitAdvancedBus(
             IConnectionFactory connectionFactory,
@@ -33,7 +33,8 @@ namespace EasyNetQ
             IConsumerFactory consumerFactory, 
             IEasyNetQLogger logger, 
             Func<string> getCorrelationId, 
-            IConventions conventions)
+            IConventions conventions,
+            ushort? prefetchCount=null)
         {
             if (connectionFactory == null)
             {
@@ -70,7 +71,8 @@ namespace EasyNetQ
             this.logger = logger;
             this.getCorrelationId = getCorrelationId;
             this.conventions = conventions;
-
+            if (prefetchCount.HasValue)
+                this.prefetchCount = prefetchCount.Value;
             connection = new PersistentConnection(connectionFactory, logger);
             connection.Connected += OnConnected;
             connection.Disconnected += consumerFactory.ClearConsumers;
